@@ -1,6 +1,9 @@
+"use client"
+
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Package, Tags, ShoppingCart, Users, Megaphone, FileText, MessageCircle, CreditCard, Shield } from 'lucide-react'
+import { LayoutDashboard, Package, Tags, ShoppingCart, Users, Megaphone, FileText, MessageCircle, CreditCard, Shield, LogOut } from 'lucide-react'
+import { useAppContext } from "@/context/AppContext"
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -16,6 +19,12 @@ const nav = [
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { logout } = useAppContext()
+
+  const handleLogout = async () => {
+    await logout()
+  }
+
   return (
     <div className="min-h-svh bg-white dark:bg-background">
       <div className="border-b bg-gradient-to-r from-red-600 via-orange-500 to-green-600 text-white">
@@ -28,6 +37,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link key={n.href} href={n.href} className="hover:underline">{n.label}</Link>
             ))}
           </nav>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors"
+          >
+            <LogOut className="size-4" />
+            Logout
+          </button>
         </div>
       </div>
       <div className="container mx-auto grid gap-6 px-4 py-6 lg:grid-cols-[240px_1fr]">
