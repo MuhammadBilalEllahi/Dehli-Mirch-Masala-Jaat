@@ -9,7 +9,7 @@ import { useWishlist } from "@/lib/wishlist-store"
 import { Input } from "@/components/ui/input"
 
 export function AddToCartSection({ product }: { product: Product }) {
-  const { add } = useCart()
+  const { add, isAdding } = useCart()
   const { toggle, has } = useWishlist()
   const [qty, setQty] = useState(1)
 
@@ -17,9 +17,23 @@ export function AddToCartSection({ product }: { product: Product }) {
   useEffect(() => {
     const raw = localStorage.getItem("dm-viewed") ?? "[]"
     const ids = new Set<string>(JSON.parse(raw))
-    ids.add(product.id)
+    ids.add(String(product.id))
     localStorage.setItem("dm-viewed", JSON.stringify(Array.from(ids)))
   }, [product.id])
+
+   const handleAddToCart = () => {
+    if (isAdding) return // Prevent duplicate clicks
+    add(
+      { 
+        id: String(product.id), 
+        title: product.title, 
+        price: product.price, 
+        image: product.images[0] 
+      }, // item without qty
+      qty // quantity as second parameter
+    )
+  }
+
 
   return (
     <div className="mt-4">
@@ -31,11 +45,11 @@ export function AddToCartSection({ product }: { product: Product }) {
           value={qty}
           onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
         />
-        <Button className="bg-green-600 hover:bg-green-700" onClick={() => add(product, qty)}>
-          Add to Cart
+        <Button className="bg-green-600 hover:bg-green-700" onClick={handleAddToCart} disabled={isAdding}>
+          {isAdding ? "Adding..." : "Add to Cart"}
         </Button>
-        <button onClick={() => toggle(product)} className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-          <Heart className={`h-4 w-4 ${has(product.id) ? "text-red-600 fill-red-600" : ""}`} />
+        <button onClick={() => toggle(String(product.id))} className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+          <Heart className={`h-4 w-4 ${has(String(product.id)) ? "text-red-600 fill-red-600" : ""}`} />
           Wishlist
         </button>
       </div>
@@ -44,8 +58,8 @@ export function AddToCartSection({ product }: { product: Product }) {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 p-3 md:hidden">
         <div className="container mx-auto flex items-center gap-2">
           <div className="font-semibold text-red-600">${product.price.toFixed(2)}</div>
-          <Button className="ml-auto w-full bg-green-600 hover:bg-green-700" onClick={() => addItem(product, qty)}>
-            Add to Cart
+          <Button className="ml-auto w-full bg-green-600 hover:bg-green-700" onClick={handleAddToCart} disabled={isAdding}>
+            {isAdding ? "Adding..." : "Add to Cart"}
           </Button>
         </div>
       </div>

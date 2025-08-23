@@ -1,18 +1,18 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import { ProductCard } from "./product-card"
 import { cn } from "@/lib/utils"
 import type { Product } from "@/lib/mock-data"
 
 export function ProductGrid({
   products = [],
-  view = "grid",
+  view = "grid-3",
   pageSize = 12,
   enableInfinite = true,
 }: {
   products?: Product[]
-  view?: "grid" | "list"
+  view?: "list" | "grid-2" | "grid-3" | "grid-4"
   pageSize?: number
   enableInfinite?: boolean
 }) {
@@ -44,16 +44,20 @@ export function ProductGrid({
 
   return (
     <div>
-      {view === "grid" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {paged.map((p) => (
-            <ProductCard key={p.id} product={p} variant="grid" />
-          ))}
-        </div>
-      ) : (
+      {view === "list" ? (
         <div className="space-y-3">
           {paged.map((p) => (
             <ProductCard key={p.id} product={p} variant="list" />
+          ))}
+        </div>
+      ) : (
+        <div className={`grid gap-4 ${
+          view === "grid-2" ? "grid-cols-2" :
+          view === "grid-3" ? "grid-cols-2 sm:grid-cols-3" :
+          "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+        }`}>
+          {paged.map((p) => (
+            <ProductCard key={p.id} product={p} variant="grid" />
           ))}
         </div>
       )}
@@ -65,7 +69,7 @@ export function ProductGrid({
           ) : (
             <button
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-md border px-4 py-2 text-sm"
+              className="rounded-md border px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800"
             >
               Load more
             </button>

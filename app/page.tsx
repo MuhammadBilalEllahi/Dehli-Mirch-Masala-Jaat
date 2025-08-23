@@ -1,11 +1,12 @@
-import { HomeSearchBar } from "@/components/home-search-bar"
-import { HomeHero } from "@/components/home-hero"
-import { HomeFeaturedProducts } from "@/components/home-featured-products"
-import { HomeCategories } from "@/components/home-categories"
-import { HomeBlogPreview } from "@/components/home-blog-preview"
-import { HomeTestimonials } from "@/components/home-testimonials"
-import { HomeNewsletter } from "@/components/home-newsletter"
-import { getFeaturedProducts, getFeaturedBlogs, getCategories } from "@/lib/mock-data"
+import { HomeSearchBar } from "@/components/home/home-search-bar"
+import { HomeHero } from "@/components/home/home-hero"
+import { HomeFeaturedProducts } from "@/components/home/home-featured-products"
+import { HomeCategories } from "@/components/home/home-categories"
+import { HomeBlogPreview } from "@/components/home/home-blog-preview"
+import { HomeTestimonials } from "@/components/home/home-testimonials"
+import { getFeaturedProducts, getFeaturedBlogs, getCategories, shopLocations } from "@/lib/mock-data"
+import { HomeShopLocations } from "@/components/home/home-shops-preview"
+import { HomeNewsletter } from "@/components/home/home-newsletter"
 
 export default async function HomePage() {
   // Server Component fetching placeholder data. Interactive sections are client components.
@@ -26,9 +27,11 @@ export default async function HomePage() {
       <HomeHero />
 
       <section className="container mx-auto px-4 py-10 md:py-14">
-        <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
-        <HomeFeaturedProducts products={featured} />
+       
+        <HomeFeaturedProducts bestSellings={featured} newArrivals={[...featured].reverse()} />
       </section>
+
+      <HomeShopLocations shopLocation={shopLocations}/>
 
       <section className="container mx-auto px-4 py-10 md:py-14">
         <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>

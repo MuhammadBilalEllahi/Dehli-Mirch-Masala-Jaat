@@ -14,7 +14,12 @@ export function ProductCard({
   product: Product
   variant?: "grid" | "list"
 }) {
-  const { add } = useCart()
+  const { add, isAdding } = useCart()
+
+  const handleAddToCart = () => {
+    if (isAdding) return // Prevent duplicate clicks
+    add({ id: product.id, title: product.title, price: product.price, image: product.image }, 1)
+  }
 
   if (variant === "list") {
     return (
@@ -44,9 +49,10 @@ export function ProductCard({
             <div className="font-semibold text-red-600">${product.price.toFixed(2)}</div>
             <Button
               className="bg-green-600 hover:bg-green-700"
-              onClick={() => add({ id: product.id, title: product.title, price: product.price, image: product.image }, 1)}
+              onClick={handleAddToCart}
+              disabled={isAdding}
             >
-              Add to Cart
+              {isAdding ? "Adding..." : "Add to Cart"}
             </Button>
           </div>
         </div>
@@ -78,9 +84,10 @@ export function ProductCard({
           <Button
             size="sm"
             className="bg-green-600 hover:bg-green-700"
-            onClick={() => add({ id: product.id, title: product.title, price: product.price, image: product.image }, 1)}
+            onClick={handleAddToCart}
+            disabled={isAdding}
           >
-            Add to Cart
+            {isAdding ? "Adding..." : "Add to Cart"}
           </Button>
         </div>
       </div>

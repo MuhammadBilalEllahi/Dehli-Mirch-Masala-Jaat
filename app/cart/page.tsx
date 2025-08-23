@@ -1,6 +1,6 @@
 'use client'
 
-import { useCart } from "@/lib/cart-store"
+import { CartProvider, useCart } from "@/lib/cart-store"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
@@ -11,13 +11,17 @@ export default function CartPage() {
   // Important: do NOT call useCart here. Wrap children with providers first.
   return (
     <RootProviders>
+      <CartProvider>
       <CartContent />
+      </CartProvider>
     </RootProviders>
   )
 }
 
 function CartContent() {
-  const { items, remove, updateQty, subtotal, applyPromo, promo, clear } = useCart()
+  const { items, remove, updateQty, subtotal,  clear } = useCart()
+  console.log("CartContent - items:", items)
+  console.log("CartContent - items length:", items.length)
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -50,7 +54,7 @@ function CartContent() {
                       <Trash2 className="h-4 w-4" /> Remove
                     </button>
                   </div>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">{it.variant ?? "Default"}</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Quantity: {it.qty}</p>
                   <div className="mt-3 flex items-center justify-between">
                     <div className="inline-flex items-center gap-2">
                       <button
@@ -85,7 +89,7 @@ function CartContent() {
               <span>Estimated Delivery</span>
               <span>${subtotal > 50 ? "0.00" : "4.99"}</span>
             </div>
-            <div className="my-3">
+            {/* <div className="my-3">
               <label className="text-sm font-medium">Promo code</label>
               <div className="mt-2 flex gap-2">
                 <Input defaultValue={promo ?? ""} placeholder="Enter code" id="promo" />
@@ -112,7 +116,7 @@ function CartContent() {
                   (promo?.toLowerCase() === "HEAT10".toLowerCase() ? subtotal * 0.1 : 0)
                 ).toFixed(2)}
               </span>
-            </div>
+            </div> */}
             <Link href="/checkout">
               <Button className="mt-4 w-full bg-green-600 hover:bg-green-700">Checkout</Button>
             </Link>

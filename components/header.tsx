@@ -2,13 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ShoppingCart, Sun, Moon } from 'lucide-react'
+import { ShoppingCart, Sun, Moon, Heart } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { useCart } from "@/lib/cart-store"
+import { useWishlist } from "@/lib/wishlist-store"
+import { CartSheet } from "@/components/cart-sheet"
 
 export function Header() {
   const pathname = usePathname()
-  const { count } = useCart()
+  const { count, isAdding } = useCart()
+  const { ids: wishlistIds } = useWishlist()
   const [theme, setTheme] = useState<"light" | "dark">("light")
 
   useEffect(() => {
@@ -56,6 +59,20 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <Link href="/account/wishlist">
+            <button
+              className="relative h-9 w-9 inline-flex items-center justify-center rounded border"
+              aria-label="Wishlist"
+              title="View Wishlist"
+            >
+              <Heart className="h-4 w-4 text-red-600" />
+              {wishlistIds.size > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] rounded-full bg-red-600 text-white text-[10px] grid place-items-center px-1">
+                  {wishlistIds.size}
+                </span>
+              )}
+            </button>
+          </Link>
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
@@ -63,19 +80,28 @@ export function Header() {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <Link
-            href="/cart"
-            className="relative h-9 w-9 inline-flex items-center justify-center rounded border"
-            aria-label="Cart"
-            title="View Cart"
-          >
-            <ShoppingCart className="h-4 w-4 text-green-700" />
-            {count > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] rounded-full bg-green-600 text-white text-[10px] grid place-items-center px-1">
-                {count}
-              </span>
-            )}
-          </Link>
+          <CartSheet>
+            <button
+              className={`relative h-9 w-9 inline-flex items-center justify-center rounded border transition-colors ${
+                isAdding ? 'bg-green-100 dark:bg-green-900' : ''
+              }`}
+              aria-label="Cart"
+              title="View Cart"
+              disabled={isAdding}
+            >
+              <ShoppingCart className={`h-4 w-4 ${isAdding ? 'text-green-600' : 'text-green-700'}`} />
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] rounded-full bg-green-600 text-white text-[10px] grid place-items-center px-1">
+                  {count}
+                </span>
+              )}
+              {isAdding && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-3 w-3 animate-spin rounded-full border border-green-600 border-t-transparent"></div>
+                </div>
+              )}
+            </button>
+          </CartSheet>
         </div>
       </div>
     </header>

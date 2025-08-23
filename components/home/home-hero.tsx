@@ -22,7 +22,7 @@ const slides: Slide[] = [
     title: "Pickle Perfection",
     subtitle: "Tangy, spicy, homemade-style pickles",
     cta: { label: "Explore Pickles", href: "/category/pickles" },
-    image: "/pickle-banner-green.png",
+    image: "/delhi-mirch-ecommerce-banner.png",
   },
   {
     title: "Snack Attack",
@@ -69,14 +69,14 @@ export function HomeHero() {
           onClick={() => setIndex((i) => (i - 1 + slides.length) % slides.length)}
           className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border bg-white/90 p-2"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5 dark:text-black" />
         </button>
         <button
           aria-label="Next slide"
           onClick={() => setIndex((i) => (i + 1) % slides.length)}
           className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border bg-white/90 p-2"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-5 w-5 dark:text-black" />
         </button>
 
         <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">

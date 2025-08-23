@@ -3,13 +3,12 @@
 import { useMemo, useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { type Product } from "@/lib/mock-data"
-import { CategorySearchBar } from "./category-search-bar"
 import { FiltersSidebar } from "./filters-sidebar"
 import { MobileFiltersSheet } from "./mobile-filters-sheet"
-import { SortDropdown } from "./sort-dropdown"
+import { ViewControls } from "./view-controls"
 
 import { Button } from "@/components/ui/button"
-import { Filter, SlidersHorizontal } from 'lucide-react'
+import { Filter } from 'lucide-react'
 import { ProductGrid } from "./product-grid"
 
 const spiceLabelToRange: Record<string, [number, number]> = {
@@ -28,18 +27,21 @@ export function CategoryClient({
 }) {
   const router = useRouter()
   const sp = useSearchParams()
-  const [view, setView] = useState<"grid" | "list">((sp.get("view") as "grid" | "list") || "grid")
-  const [infinite, setInfinite] = useState<boolean>(true)
+  const [view, setView] = useState<"list" | "grid-2" | "grid-3" | "grid-4">((sp.get("view") as "list" | "grid-2" | "grid-3" | "grid-4") || "grid-3")
+  const [itemsPerPage, setItemsPerPage] = useState<number>(Number(sp.get("itemsPerPage")) || 12)
 
   useEffect(() => {
     const v = sp.get("view")
-    if (v === "grid" || v === "list") setView(v)
+    if (v === "list" || v === "grid-2" || v === "grid-3" || v === "grid-4") setView(v)
+    
+    const items = Number(sp.get("itemsPerPage"))
+    if (items && [12, 20, 24, 36, 48].includes(items)) setItemsPerPage(items)
   }, [sp])
 
   const productsInCategory = useMemo(() => {
     const lower = slug.toLowerCase()
     if (lower === "all") return allProducts
-    return allProducts.filter((p) => p.category.toLowerCase() === lower)
+    return allProducts.filter((p) => p.category && p.category.toLowerCase() === lower)
   }, [slug, allProducts])
 
   const filtered = useMemo(() => {
@@ -65,12 +67,12 @@ export function CategoryClient({
     list = list.filter((p) => p.price >= pmin && p.price <= pmax)
 
     if (type) {
-      list = list.filter((p) => p.type.toLowerCase() === type.toLowerCase())
+      list = list.filter((p) => p.type && p.type.toLowerCase() === type.toLowerCase())
     }
 
     if (brands.length) {
       const set = new Set(brands.map((b) => b.toLowerCase()))
-      list = list.filter((p) => set.has(p.brand.toLowerCase()))
+      list = list.filter((p) => p.brand && set.has(p.brand.toLowerCase()))
     }
 
     if (spice.length) {
@@ -78,7 +80,7 @@ export function CategoryClient({
         return spice.some((label) => {
           const range = spiceLabelToRange[label]
           if (!range) return false
-          return p.spiceLevel >= range[0] && p.spiceLevel <= range[1]
+          return p.spiceLevel && p.spiceLevel >= range[0] && p.spiceLevel <= range[1]
         })
       })
     }
@@ -128,87 +130,40 @@ export function CategoryClient({
 
   return (
     <main className="container mx-auto px-4 py-6">
-      <CategorySearchBar
-        currentCategory={slug}
-        onSearch={(text) => updateParam("q", text)}
-        initialQuery={sp.get("q") || ""}
-      />
-
-      <div className="mt-4 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <MobileFiltersSheet
-            slug={slug}
-            onApply={setParams}
-            initial={{
-              pmin: Number(sp.get("pmin") ?? 0),
-              pmax: Number(sp.get("pmax") ?? 9999),
-              type: sp.get("type") || "",
-              brands: (sp.get("brands") || "").split(",").filter(Boolean),
-              spice: (sp.get("spice") || "").split(",").filter(Boolean),
-            }}
-            allProducts={productsInCategory}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="md:hidden"
-            onClick={() => {
-              const ev = new CustomEvent("open-filters")
-              window.dispatchEvent(ev)
-            }}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden md:inline-flex"
-            onClick={() => {
-              const ev = new CustomEvent("reset-filters")
-              window.dispatchEvent(ev)
-            }}
-          >
-            Reset
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant={view === "grid" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setView("grid")
-              updateParam("view", "grid")
-            }}
-          >
-            Grid
-          </Button>
-          <Button
-            variant={view === "list" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setView("list")
-              updateParam("view", "list")
-            }}
-          >
-            List
-          </Button>
-          <SortDropdown
-            value={(sp.get("sort") as any) || "popularity"}
-            onChange={(v) => updateParam("sort", v)}
-          />
-          <Button
-            variant={infinite ? "default" : "outline"}
-            size="sm"
-            className="hidden md:inline-flex"
-            onClick={() => setInfinite((p) => !p)}
-            title="Toggle infinite scroll"
-          >
-            <SlidersHorizontal className="h-4 w-4 mr-2" />
-            {infinite ? "Infinite" : "Paginate"}
-          </Button>
-        </div>
+      <div className="mt-4 flex items-center gap-2 md:hidden">
+        <MobileFiltersSheet
+          slug={slug}
+          onApply={setParams}
+          initial={{
+            pmin: Number(sp.get("pmin") ?? 0),
+            pmax: Number(sp.get("pmax") ?? 9999),
+            type: sp.get("type") || "",
+            brands: (sp.get("brands") || "").split(",").filter(Boolean),
+            spice: (sp.get("spice") || "").split(",").filter(Boolean),
+          }}
+          allProducts={productsInCategory}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const ev = new CustomEvent("open-filters")
+            window.dispatchEvent(ev)
+          }}
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const ev = new CustomEvent("reset-filters")
+            window.dispatchEvent(ev)
+          }}
+        >
+          Reset
+        </Button>
       </div>
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] gap-6">
@@ -228,11 +183,28 @@ export function CategoryClient({
         </aside>
 
         <section className="min-w-0">
+          <div className="mb-4">
+            <ViewControls
+              view={view}
+              onViewChange={(newView) => {
+                setView(newView)
+                updateParam("view", newView)
+              }}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={(newItemsPerPage) => {
+                setItemsPerPage(newItemsPerPage)
+                updateParam("itemsPerPage", newItemsPerPage)
+              }}
+              sortValue={(sp.get("sort") as any) || "popularity"}
+              onSortChange={(v) => updateParam("sort", v)}
+            />
+          </div>
+          
           <ProductGrid
             products={filtered}
             view={view}
-            enableInfinite={infinite}
-            pageSize={12}
+            pageSize={itemsPerPage}
+            enableInfinite={true}
           />
         </section>
       </div>

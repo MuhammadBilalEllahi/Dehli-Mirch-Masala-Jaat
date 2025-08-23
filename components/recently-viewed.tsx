@@ -1,32 +1,44 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getAllProducts, type Product } from "@/lib/data"
 import { ProductCard } from "./product-card"
+import { products } from "@/lib/mock-data"
+import type { Product } from "@/lib/mock-data"
 
 export function RecentlyViewed({ currentId }: { currentId: string }) {
-  const [items, setItems] = useState<Product[]>([])
+  const [recentProducts, setRecentProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    ;(async () => {
-      const all = await getAllProducts()
+    try {
       const raw = localStorage.getItem("dm-viewed") ?? "[]"
-      const ids = (JSON.parse(raw) as string[]).filter((id) => id !== currentId)
-      const mapped = all.filter((p) => ids.includes(p.id)).slice(-4).reverse()
-      setItems(mapped)
-    })()
+      const viewedIds = JSON.parse(raw) as string[]
+      
+      // Filter out current product and get unique products
+      const uniqueIds = viewedIds.filter(id => id !== currentId)
+      const uniqueRecentIds = [...new Set(uniqueIds)].slice(0, 8) // Get up to 8 unique products
+      
+      const recent = products.filter(product => uniqueRecentIds.includes(product.id))
+      setRecentProducts(recent)
+    } catch (error) {
+      console.error("Error loading recently viewed products:", error)
+      setRecentProducts([])
+    }
   }, [currentId])
 
-  if (items.length === 0) return null
+  if (recentProducts.length === 0) {
+    return null
+  }
 
   return (
-    <div className="container mx-auto px-0">
-      <h2 className="text-xl font-semibold mb-4">Recently Viewed</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {items.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
+    <section className="mt-12">
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl font-bold mb-6">Recently Viewed Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {recentProducts.map((product) => (
+            <ProductCard key={product.id} product={product} variant="grid" />
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   )
 }

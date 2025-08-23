@@ -128,9 +128,9 @@
 
 "use client"
 
-import { createContext, useContext, useEffect, useMemo, useReducer } from "react"
+import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react"
 
-type CartItem = {
+export type CartItem = {
   id: string
   title: string
   price: number
@@ -157,6 +157,7 @@ const CartCtx = createContext<{
   clear: () => void
   count: number
   subtotal: number
+  isAdding: boolean
 }>({
   items: [],
   add: () => {},
@@ -165,6 +166,7 @@ const CartCtx = createContext<{
   clear: () => {},
   count: 0,
   subtotal: 0,
+  isAdding: false,
 })
 
 const STORAGE_KEY = "dm-cart"
@@ -205,6 +207,8 @@ function reducer(state: State, action: Action): State {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { items: [] })
+  const [isHydrated, setIsHydrated] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
 
   // hydrate
   useEffect(() => {
@@ -213,22 +217,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const parsed = raw ? JSON.parse(raw) : null
       const items = normalizeStored(parsed)
       dispatch({ type: "HYDRATE", payload: { items } })
-    } catch {
+      setIsHydrated(true)
+    } catch (error) {
+      console.error("Error hydrating cart:", error)
       dispatch({ type: "HYDRATE", payload: { items: [] } })
+      setIsHydrated(true)
     }
   }, [])
 
   // persist
   useEffect(() => {
+    if (!isHydrated) return // Don't persist until hydration is complete
     try {
       const items = Array.isArray(state.items) ? state.items : []
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error("Error persisting cart:", error)
     }
-  }, [state.items])
+  }, [state.items, isHydrated])
 
-  const add = (item: Omit<CartItem, "qty">, qty = 1) => dispatch({ type: "ADD", payload: { item, qty } })
+  const add = (item: Omit<CartItem, "qty">, qty = 1) => {
+    if (isAdding) return // Prevent duplicate additions
+    setIsAdding(true)
+    dispatch({ type: "ADD", payload: { item, qty } })
+    // Reset the flag after a short delay to prevent rapid clicks
+    setTimeout(() => setIsAdding(false), 500)
+  }
+  
   const remove = (id: string) => dispatch({ type: "REMOVE", payload: { id } })
   const updateQty = (id: string, qty: number) => dispatch({ type: "UPDATE_QTY", payload: { id, qty } })
   const clear = () => dispatch({ type: "CLEAR" })
@@ -241,7 +256,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [state.items])
 
   return (
-    <CartCtx.Provider value={{ items: state.items, add, remove, updateQty, clear, count, subtotal }}>
+    <CartCtx.Provider value={{ items: state.items, add, remove, updateQty, clear, count, subtotal, isAdding }}>
       {children}
     </CartCtx.Provider>
   )

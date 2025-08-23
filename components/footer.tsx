@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { NewsletterInline } from "@/components/home-newsletter"
+import { NewsletterInline } from "@/components/home/home-newsletter"
 
 export function Footer() {
   return (
@@ -29,6 +29,16 @@ export function Footer() {
             <li><Link href="/contact" className="hover:underline">Contact</Link></li>
             <li><Link href="/faqs" className="hover:underline">FAQs</Link></li>
             <li><Link href="/careers" className="hover:underline">Careers</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-3">Legal</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link href="/terms" className="hover:underline">Terms of Service</Link></li>
+            <li><Link href="/privacy" className="hover:underline">Privacy Policy</Link></li>
+            <li><Link href="/shipping" className="hover:underline">Shipping Policy</Link></li>
+            <li><Link href="/returns" className="hover:underline">Return & Refund</Link></li>
+            <li><Link href="/disclaimers" className="hover:underline">Disclaimers</Link></li>
           </ul>
         </div>
         <div>

@@ -79,12 +79,9 @@ export function FiltersSidebar({
   }
 
   return (
-    <div className="rounded-2xl border bg-white dark:bg-neutral-950 p-4 sticky top-4">
-      <div className="flex items-center justify-between mb-2">
+    <div className="rounded-2xl border bg-white dark:bg-neutral-950 p-4 sticky top-4 h-fit">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold">Filters</h2>
-        <Button variant="ghost" size="sm" onClick={reset}>
-          Clear all
-        </Button>
       </div>
       <Accordion type="multiple" defaultValue={["price", "type", "brand", "spice"]} className="w-full">
         <AccordionItem value="price">
